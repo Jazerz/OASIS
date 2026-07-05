@@ -11,13 +11,24 @@
         body { font-family: 'Sarabun', sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        html { scroll-behavior: smooth; }
+        
+        /* เพิ่ม Animation สำหรับ Pop-up เครื่องหมายถูก */
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
     </style>
 </head>
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
 
     <div class="relative w-full max-w-[412px] h-[840px] bg-gray-50 rounded-[48px] shadow-2xl border-[12px] border-gray-800 overflow-hidden flex flex-col">
         
-        <div class="bg-white px-8 pt-3 pb-2 flex justify-between items-center text-xs font-semibold text-gray-700 z-20">
+        <div class="bg-white px-8 pt-3 pb-2 flex justify-between items-center text-xs font-semibold text-gray-700 z-20 shadow-sm relative">
             <div>09:45</div>
             <div class="w-28 h-4 bg-black rounded-full absolute left-1/2 transform -translate-x-1/2 top-2"></div>
             <div class="flex items-center gap-1">
@@ -27,7 +38,7 @@
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto no-scrollbar pb-24 bg-slate-50 relative">
+        <div class="flex-1 overflow-y-auto no-scrollbar pb-24 bg-slate-50 relative" id="main-scroll-area">
 
             <div id="page-home" class="tab-content p-5 space-y-5">
                 <div class="flex justify-between items-center">
@@ -100,201 +111,240 @@
                 </div>
             </div>
 
-            <div id="page-map" class="tab-content p-5 space-y-4 hidden">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-slate-800">แผนที่ตู้ในมหาวิทยาลัย</h2>
-                </div>
-
-                <div class="w-full h-72 bg-emerald-50 rounded-2xl border border-emerald-100 relative overflow-hidden shadow-inner p-4" style="background-image: radial-gradient(#a7f3d0 1px, transparent 1px); background-size: 16px 16px;">
-                    <div class="absolute top-1/2 left-1/3 text-center">
-                        <div class="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-md animate-ping absolute"></div>
-                        <div class="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-md relative"></div>
-                        <span class="text-[10px] bg-slate-900 text-white px-1.5 py-0.5 rounded shadow mt-1 inline-block">คุณอยู่ที่นี่</span>
+            <div id="page-map" class="tab-content hidden">
+                <div class="sticky top-0 bg-slate-50/95 backdrop-blur-md z-10 p-5 pb-3 space-y-3 shadow-md border-b border-gray-100">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">แผนที่ตู้ในมหาวิทยาลัย</h2>
+                        <p class="text-[11px] text-gray-500 mt-0.5">คลิกที่หมุดหรือรายการการ์ดด้านล่างเพื่อเชื่อมโยงข้อมูล</p>
                     </div>
-
-                    <div onclick="selectKiosk('canteen')" class="absolute top-1/4 right-1/4 cursor-pointer text-center group">
-                        <i class="fas fa-map-marker-alt text-3xl text-emerald-500 drop-shadow-md group-hover:scale-110 transition-transform"></i>
-                        <span class="absolute -bottom-4 -left-4 w-16 text-[9px] font-bold text-slate-700 bg-white/80 rounded px-1">โรงอาหารกลาง</span>
-                    </div>
-
-                    <div onclick="selectKiosk('dorm')" class="absolute bottom-1/4 right-1/3 cursor-pointer text-center group">
-                        <i class="fas fa-map-marker-alt text-3xl text-rose-500 drop-shadow-md group-hover:scale-110 transition-transform"></i>
-                        <span class="absolute -bottom-4 -left-3 w-12 text-[9px] font-bold text-slate-700 bg-white/80 rounded px-1">หอพักใน</span>
-                    </div>
-                </div>
-
-                <div id="kiosk-details-card" class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span id="kiosk-status-badge" class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-700">🟢 ว่างพร้อมใช้</span>
-                            </div>
-                            <h3 id="kiosk-title" class="font-bold text-sm text-slate-800 mt-1">ตู้ OASIS โรงอาหารกลาง</h3>
+                    <div class="w-full h-52 bg-emerald-50 rounded-2xl border border-emerald-100 relative overflow-hidden shadow-inner p-4" style="background-image: radial-gradient(#a7f3d0 1px, transparent 1px); background-size: 16px 16px;">
+                        <div class="absolute top-1/2 left-1/4 text-center z-10">
+                            <div class="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-md animate-ping absolute"></div>
+                            <div class="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-md relative"></div>
+                            <span class="text-[9px] bg-slate-900 text-white px-1.5 py-0.5 rounded shadow mt-1 inline-block font-semibold">คุณอยู่ที่นี่</span>
+                        </div>
+                        <div id="pin-canteen" onclick="selectKiosk('canteen')" class="absolute top-1/4 right-1/4 cursor-pointer text-center group transition-all duration-300 scale-100 origin-bottom">
+                            <i class="fas fa-map-marker-alt text-3xl text-emerald-500 drop-shadow-md"></i>
+                            <span class="absolute -bottom-4 -left-4 w-16 text-[9px] font-bold text-slate-700 bg-white/90 rounded px-1 shadow-sm whitespace-nowrap">โรงอาหารกลาง</span>
+                        </div>
+                        <div id="pin-dorm" onclick="selectKiosk('dorm')" class="absolute bottom-1/4 right-1/3 cursor-pointer text-center group transition-all duration-300 scale-100 origin-bottom">
+                            <i class="fas fa-map-marker-alt text-3xl text-rose-500 drop-shadow-md"></i>
+                            <span class="absolute -bottom-4 -left-3 w-12 text-[9px] font-bold text-slate-700 bg-white/90 rounded px-1 shadow-sm whitespace-nowrap">หอพักใน</span>
+                        </div>
+                        <div id="pin-eng" onclick="selectKiosk('eng')" class="absolute top-1/3 left-1/2 cursor-pointer text-center group transition-all duration-300 scale-100 origin-bottom">
+                            <i class="fas fa-map-marker-alt text-3xl text-amber-500 drop-shadow-md"></i>
+                            <span class="absolute -bottom-4 -left-3 w-16 text-[9px] font-bold text-slate-700 bg-white/90 rounded px-1 shadow-sm whitespace-nowrap">คณะวิศวะฯ</span>
                         </div>
                     </div>
-                    <div class="space-y-2 pt-2 border-t border-gray-100 text-xs">
-                        <div>
-                            <div class="flex justify-between text-gray-600 mb-1">
-                                <span>💧 ถังน้ำมันพืชใช้แล้ว</span>
-                                <span id="oil-tank-text" class="font-bold text-slate-700">ใช้ไป 20%</span>
+                </div>
+
+                <div class="p-5 space-y-4" id="kiosk-list-container">
+                    <div id="card-canteen" onclick="selectKiosk('canteen')" class="kiosk-card bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-sm space-y-3 cursor-pointer transition-all duration-300 hover:border-gray-300">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-700">🟢 ว่างพร้อมใช้</span>
+                                <h3 class="font-bold text-sm text-slate-800 mt-1">ตู้ OASIS โรงอาหารกลาง</h3>
                             </div>
-                            <div class="w-full bg-gray-100 h-2 rounded-full"><div id="oil-tank-bar" class="bg-emerald-500 h-full w-[20%] rounded-full"></div></div>
+                            <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded"><i class="fas fa-walking"></i> 200m</span>
                         </div>
-                        <div>
-                            <div class="flex justify-between text-gray-600 mb-1">
-                                <span>🥬 ถังขยะเศษอาหาร</span>
-                                <span id="organic-tank-text" class="font-bold text-slate-700">ใช้ไป 45%</span>
+                        <div class="space-y-2 pt-1">
+                            <div class="flex justify-between text-xs text-slate-600 font-medium">
+                                <span class="flex items-center gap-1.5"><i class="fas fa-tint text-sky-500 w-3 text-center"></i> ถังน้ำมันพืชใช้แล้ว</span>
+                                <span>ใช้ไป 20%</span>
                             </div>
-                            <div class="w-full bg-gray-100 h-2 rounded-full"><div id="organic-tank-bar" class="bg-amber-500 h-full w-[45%] rounded-full"></div></div>
+                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-emerald-500 h-full rounded-full" style="width: 20%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between text-xs text-slate-600 font-medium pt-1">
+                                <span class="flex items-center gap-1.5"><i class="fas fa-seedling text-amber-500 w-3 text-center"></i> ถังขยะเศษอาหาร</span>
+                                <span>ใช้ไป 45%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-amber-500 h-full rounded-full" style="width: 45%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="card-dorm" onclick="selectKiosk('dorm')" class="kiosk-card bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-sm space-y-3 cursor-pointer transition-all duration-300 hover:border-gray-300">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-700">🔴 ตู้เต็ม (งดรับชั่วคราว)</span>
+                                <h3 class="font-bold text-sm text-slate-800 mt-1">ตู้ OASIS หอพักนักศึกษา (หอใน)</h3>
+                            </div>
+                            <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded"><i class="fas fa-walking"></i> 800m</span>
+                        </div>
+                        <div class="space-y-2 pt-1">
+                            <div class="flex justify-between text-xs text-slate-600 font-medium">
+                                <span class="flex items-center gap-1.5"><i class="fas fa-tint text-sky-400 w-3 text-center"></i> ถังน้ำมันพืชใช้แล้ว</span>
+                                <span class="text-red-600 font-bold">ใช้ไป 100%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-red-500 h-full rounded-full" style="width: 100%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between text-xs text-slate-600 font-medium pt-1">
+                                <span class="flex items-center gap-1.5"><i class="fas fa-seedling text-amber-500 w-3 text-center"></i> ถังขยะเศษอาหาร</span>
+                                <span class="text-red-600 font-bold">ใช้ไป 90%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-red-500 h-full rounded-full" style="width: 90%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="card-eng" onclick="selectKiosk('eng')" class="kiosk-card bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-sm space-y-3 cursor-pointer transition-all duration-300 hover:border-gray-300">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-700">🟡 ใกล้เต็ม</span>
+                                <h3 class="font-bold text-sm text-slate-800 mt-1">ตู้ OASIS คณะวิศวกรรมศาสตร์</h3>
+                            </div>
+                            <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded"><i class="fas fa-walking"></i> 450m</span>
+                        </div>
+                        <div class="space-y-2 pt-1">
+                            <div class="flex justify-between text-xs text-slate-600 font-medium">
+                                <span class="flex items-center gap-1.5"><i class="fas fa-tint text-sky-500 w-3 text-center"></i> ถังน้ำมันพืชใช้แล้ว</span>
+                                <span>ใช้ไป 75%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-amber-500 h-full rounded-full" style="width: 75%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between text-xs text-slate-600 font-medium pt-1">
+                                <span class="flex items-center gap-1.5"><i class="fas fa-seedling text-amber-500 w-3 text-center"></i> ถังขยะเศษอาหาร</span>
+                                <span>ใช้ไป 60%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-amber-500 h-full rounded-full" style="width: 60%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="page-rewards" class="tab-content p-5 space-y-4 hidden">
-                <div class="flex justify-between items-center">
+            <div id="page-rewards" class="tab-content p-5 space-y-5 hidden">
+                <div class="flex justify-between items-center sticky top-0 bg-slate-50 z-10 py-2">
                     <h2 class="text-lg font-bold text-slate-800">แลกของรางวัล</h2>
-                    <div class="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-xs font-bold border border-amber-200">
-                        <i class="fas fa-coins"></i> <span id="wallet-points">1,250</span> Pts
+                    <div class="bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-bold border border-amber-200 flex items-center gap-1 shadow-sm">
+                        <i class="fas fa-coins text-amber-500"></i> <span id="wallet-points">1,250</span> Pts
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-xs text-gray-500 mb-3"><i class="fas fa-hamburger mr-1"></i> หมวดอาหารและเครื่องดื่ม</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fas fa-utensils"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800">ส่วนลดอาหาร 10 บาท</h4>
+                                    <span class="text-[11px] text-amber-600 font-bold block mt-0.5">40 Points</span>
+                                </div>
+                            </div>
+                            <button onclick="redeemReward(40, 'ส่วนลดอาหาร 10 บาท')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition active:scale-95">แลกรับ</button>
+                        </div>
+
+                        <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fas fa-utensils"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800">ส่วนลดอาหาร 20 บาท</h4>
+                                    <span class="text-[11px] text-amber-600 font-bold block mt-0.5">80 Points</span>
+                                </div>
+                            </div>
+                            <button onclick="redeemReward(80, 'ส่วนลดอาหาร 20 บาท')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition active:scale-95">แลกรับ</button>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-100 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-rose-400 to-orange-500 text-white rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fas fa-gift"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800">คูปองอาหาร ฟรี!</h4>
+                                    <span class="text-[11px] text-amber-600 font-bold block mt-0.5">240 Points</span>
+                                </div>
+                            </div>
+                            <button onclick="redeemReward(240, 'คูปองอาหารฟรี')" class="bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition active:scale-95 shadow-md">แลกรับ</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex gap-2 text-xs font-semibold overflow-x-auto no-scrollbar py-1">
-                    <span class="bg-slate-900 text-white px-3 py-1.5 rounded-full whitespace-nowrap">ทั้งหมด</span>
-                    <span class="bg-white border text-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">สำหรับนักศึกษา</span>
-                    <span class="bg-white border text-gray-600 px-3 py-1.5 rounded-full whitespace-nowrap">สำหรับร้านค้า</span>
-                </div>
-
-                <div class="space-y-3">
-                    <div class="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fas fa-utensils"></i></div>
-                            <div>
-                                <span class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">สำหรับนักศึกษา</span>
-                                <h4 class="font-bold text-xs text-slate-800 mt-1">Voucher อาหารฟรี 40.-</h4>
-                                <p class="text-[10px] text-gray-500">ใช้ได้ที่โรงอาหารกลางทุกร้าน</p>
-                                <span class="text-xs text-amber-600 font-bold block mt-1">400 Points</span>
+                <div class="pt-2">
+                    <h3 class="font-bold text-xs text-gray-500 mb-3"><i class="fas fa-gas-pump mr-1"></i> หมวดเชื้อเพลิงและพลังงาน</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-sky-50 text-sky-500 rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fas fa-oil-can"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800">ส่วนลดน้ำมัน 50 บาท</h4>
+                                    <span class="text-[11px] text-amber-600 font-bold block mt-0.5">450 Points</span>
+                                </div>
                             </div>
+                            <button onclick="redeemReward(450, 'ส่วนลดน้ำมัน 50 บาท')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition active:scale-95">แลกรับ</button>
                         </div>
-                        <button onclick="redeemReward(400, 'Voucher อาหารฟรี 40 บาท')" class="bg-emerald-600 text-white font-bold text-xs px-3 py-2 rounded-xl">แลกรับ</button>
-                    </div>
 
-                    <div class="bg-white border border-amber-200 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm bg-amber-50/30">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fas fa-bottle-droplet"></i></div>
-                            <div>
-                                <span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded">สำหรับร้านค้าในมหาลัย</span>
-                                <h4 class="font-bold text-xs text-slate-800 mt-1">ส่วนลดแลกน้ำมันพืชใหม่ (ยกลัง)</h4>
-                                <p class="text-[10px] text-gray-500">ลดต้นทุนร้านค้า 150 บาท</p>
-                                <span class="text-xs text-amber-600 font-bold block mt-1">1,000 Points</span>
+                        <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-sky-50 text-sky-500 rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fas fa-oil-can"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800">ส่วนลดน้ำมัน 100 บาท</h4>
+                                    <span class="text-[11px] text-amber-600 font-bold block mt-0.5">900 Points</span>
+                                </div>
                             </div>
+                            <button onclick="redeemReward(900, 'ส่วนลดน้ำมัน 100 บาท')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition active:scale-95">แลกรับ</button>
                         </div>
-                        <button onclick="redeemReward(1000, 'ส่วนลดแลกน้ำมันพืชใหม่ (ยกลัง)')" class="bg-emerald-600 text-white font-bold text-xs px-3 py-2 rounded-xl">แลกรับ</button>
-                    </div>
 
-                    <div class="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fas fa-coffee"></i></div>
-                            <div>
-                                <span class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">ทั่วไป</span>
-                                <h4 class="font-bold text-xs text-slate-800 mt-1">ส่วนลดร้านกาแฟมหาลัย 10.-</h4>
-                                <span class="text-xs text-amber-600 font-bold block mt-1">150 Points</span>
+                        <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-sky-50 text-sky-500 rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fas fa-oil-can"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800">ส่วนลดน้ำมัน 200 บาท</h4>
+                                    <span class="text-[11px] text-amber-600 font-bold block mt-0.5">1,800 Points</span>
+                                </div>
                             </div>
+                            <button onclick="redeemReward(1800, 'ส่วนลดน้ำมัน 200 บาท')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition active:scale-95">แลกรับ</button>
                         </div>
-                        <button onclick="redeemReward(150, 'ส่วนลดร้านกาแฟ 10 บาท')" class="bg-emerald-600 text-white font-bold text-xs px-3 py-2 rounded-xl">แลกรับ</button>
                     </div>
                 </div>
             </div>
 
-            <div id="page-history" class="tab-content p-5 space-y-4 hidden">
+             <div id="page-history" class="tab-content p-5 space-y-4 hidden">
                 <div class="flex items-center gap-3">
                     <button onclick="changeTab('home')" class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-600"><i class="fas fa-arrow-left"></i></button>
                     <h2 class="text-lg font-bold text-slate-800">ประวัติการฝาก</h2>
                 </div>
-
-                <div class="space-y-3 mt-4">
-                    <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
-                        <div class="flex gap-3 items-center">
-                            <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center"><i class="fas fa-bottle-droplet"></i></div>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-800">น้ำมันพืชใช้แล้ว (2 ลิตร)</h4>
-                                <p class="text-[10px] text-gray-500">ตู้: โรงอาหารกลาง • 12 ก.ค. 69</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs font-bold text-emerald-600">+200 Pts</span>
-                            <span class="block text-[9px] text-gray-400">สำเร็จ</span>
-                        </div>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
-                        <div class="flex gap-3 items-center">
-                            <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center"><i class="fas fa-apple-whole"></i></div>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-800">ขยะเศษอาหาร (1.5 กก.)</h4>
-                                <p class="text-[10px] text-gray-500">ตู้: หอพักใน • 10 ก.ค. 69</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs font-bold text-emerald-600">+50 Pts</span>
-                            <span class="block text-[9px] text-gray-400">สำเร็จ</span>
-                        </div>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
-                        <div class="flex gap-3 items-center">
-                            <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center"><i class="fas fa-bottle-droplet"></i></div>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-800">น้ำมันพืชใช้แล้ว (5 ลิตร)</h4>
-                                <p class="text-[10px] text-gray-500">ตู้: โรงอาหารกลาง • 5 ก.ค. 69</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs font-bold text-emerald-600">+500 Pts</span>
-                            <span class="block text-[9px] text-gray-400">สำเร็จ</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="page-guide" class="tab-content p-5 space-y-4 hidden">
+             </div>
+             
+             <div id="page-guide" class="tab-content p-5 space-y-4 hidden">
                 <div class="flex items-center gap-3">
                     <button onclick="changeTab('home')" class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-600"><i class="fas fa-arrow-left"></i></button>
                     <h2 class="text-lg font-bold text-slate-800">คู่มือการแยกขยะที่ถูกต้อง</h2>
                 </div>
-
-                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 mt-4">
-                    <h3 class="text-sm font-bold text-emerald-800 flex items-center gap-2 mb-3">
-                        <i class="fas fa-bottle-droplet"></i> การเตรียม "น้ำมันพืชใช้แล้ว"
-                    </h3>
-                    <ul class="text-xs text-emerald-700 space-y-2 ml-1">
-                        <li class="flex gap-2"><i class="fas fa-check-circle mt-0.5"></i> <span>รอให้น้ำมันที่ใช้แล้ว <b>เย็นตัวลง</b> ก่อนทุกครั้ง</span></li>
-                        <li class="flex gap-2"><i class="fas fa-check-circle mt-0.5"></i> <span><b>กรองเศษอาหาร</b> (เช่น เกล็ดขนมปัง, กระเทียม) ออกให้ได้มากที่สุด</span></li>
-                        <li class="flex gap-2"><i class="fas fa-check-circle mt-0.5"></i> <span>กรอกใส่ขวดพลาสติกหรือภาชนะที่ <b>ปิดฝามิดชิด</b> เพื่อนำมาเทที่ตู้</span></li>
-                    </ul>
-                </div>
-
-                <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100">
-                    <h3 class="text-sm font-bold text-amber-800 flex items-center gap-2 mb-3">
-                        <i class="fas fa-utensils"></i> การเตรียม "ขยะเศษอาหาร"
-                    </h3>
-                    <ul class="text-xs text-amber-700 space-y-2 ml-1">
-                        <li class="flex gap-2"><i class="fas fa-check-circle mt-0.5"></i> <span><b>เทน้ำแกงหรือของเหลว</b> ทิ้งลงท่อดักไขมันก่อน (รับเฉพาะส่วนเนื้อ/กาก)</span></li>
-                        <li class="flex gap-2"><i class="fas fa-check-circle mt-0.5"></i> <span><b>แยกขยะที่ไม่ใช่อาหารออก</b> (เช่น ถุงพลาสติก, ยางรัดแกง, ไม้เสียบลูกชิ้น, กระดูกชิ้นใหญ่มาก)</span></li>
-                        <li class="flex gap-2"><i class="fas fa-check-circle mt-0.5"></i> <span>รวบรวมใส่ถุง นำมาเทลงช่องรับเศษอาหารที่ตู้โดยไม่ต้องทิ้งถุงลงไป</span></li>
-                    </ul>
-                </div>
-            </div>
+             </div>
 
         </div>
 
-        <div id="qr-modal" class="absolute inset-0 bg-black/60 backdrop-blur-sm z-30 flex items-center justify-center p-6 hidden">
+        <div id="qr-modal" class="absolute inset-0 bg-black/60 backdrop-blur-sm z-30 flex items-center justify-center p-6 hidden transition-opacity">
             <div class="bg-white rounded-[32px] p-6 w-full max-w-[320px] text-center space-y-4 shadow-2xl">
                 <div class="flex justify-between items-center border-b border-gray-100 pb-3">
                     <h3 class="font-bold text-sm text-slate-800">QR Code บัญชีของคุณ</h3>
                     <button onclick="toggleQRModal(false)" class="text-gray-400"><i class="fas fa-times"></i></button>
                 </div>
-                <p class="text-[11px] text-gray-500">สแกนที่หน้าตู้ OASIS ในมหาลัยเพื่อเริ่มฝาก</p>
-                <div class="w-44 h-44 bg-white border-4 border-slate-900 flex items-center justify-center p-2 mx-auto relative">
+                <div class="w-44 h-44 bg-white border-4 border-slate-900 flex items-center justify-center p-2 mx-auto">
                     <i class="fas fa-qrcode text-9xl text-slate-900"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="success-modal" class="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6 hidden transition-opacity duration-300 opacity-0">
+            <div id="success-modal-card" class="bg-white rounded-[32px] p-6 w-full max-w-[280px] text-center space-y-3 shadow-2xl transform scale-90 transition-transform duration-300">
+                <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i id="success-check-icon" class="fas fa-check text-4xl text-emerald-500"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800">แลกรางวัลสำเร็จ!</h3>
+                <p class="text-sm text-gray-500" id="success-reward-name">Voucher...</p>
+                
+                <div class="pt-4">
+                    <button onclick="closeSuccessModal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-3 rounded-xl transition-all active:scale-95 shadow-md shadow-emerald-200">ตกลง</button>
                 </div>
             </div>
         </div>
@@ -317,12 +367,9 @@
         let currentPoints = 1250;
 
         function changeTab(tabName) {
-            // ซ่อนทุกหน้า
             document.querySelectorAll('.tab-content').forEach(page => page.classList.add('hidden'));
-            // โชว์หน้าที่เลือก
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
 
-            // อัปเดตสีเมนูด้านล่าง (ถ้าเปิดหน้า history/guide ให้คงสีหน้าหลักไว้)
             if(['home', 'map', 'rewards'].includes(tabName)) {
                 document.querySelectorAll('.nav-btn').forEach(btn => {
                     btn.classList.remove('text-emerald-600');
@@ -331,51 +378,91 @@
                 document.getElementById(`nav-${tabName}`).classList.remove('text-gray-400');
                 document.getElementById(`nav-${tabName}`).classList.add('text-emerald-600');
             }
+            document.getElementById('main-scroll-area').scrollTop = 0;
         }
 
         function toggleQRModal(show) {
             document.getElementById('qr-modal').classList.toggle('hidden', !show);
         }
 
-        const kioskData = {
-            canteen: {
-                title: "ตู้ OASIS โรงอาหารกลาง",
-                status: "🟢 ว่างพร้อมใช้", badgeClass: "bg-emerald-100 text-emerald-700",
-                oil: 20, oilColor: "bg-emerald-500",
-                organic: 45, organicColor: "bg-amber-500"
-            },
-            dorm: {
-                title: "ตู้ OASIS หอพักนักศึกษา (หอใน)",
-                status: "🔴 ตู้เต็ม (แนะนำให้ไปโรงอาหารกลาง)", badgeClass: "bg-rose-100 text-rose-700",
-                oil: 100, oilColor: "bg-rose-500",
-                organic: 90, organicColor: "bg-rose-500"
-            }
-        };
+        const kioskIds = ['canteen', 'dorm', 'eng'];
 
-        function selectKiosk(id) {
-            const data = kioskData[id];
-            document.getElementById('kiosk-title').innerText = data.title;
-            document.getElementById('kiosk-status-badge').innerText = data.status;
-            document.getElementById('kiosk-status-badge').className = `px-2 py-0.5 text-[10px] font-bold rounded ${data.badgeClass}`;
-            
-            document.getElementById('oil-tank-text').innerText = `ใช้ไป ${data.oil}%`;
-            document.getElementById('oil-tank-bar').style.width = `${data.oil}%`;
-            document.getElementById('oil-tank-bar').className = `h-full rounded-full transition-all duration-300 ${data.oilColor}`;
+        function selectKiosk(selectedId) {
+            kioskIds.forEach(id => {
+                const card = document.getElementById(`card-${id}`);
+                const pin = document.getElementById(`pin-${id}`);
 
-            document.getElementById('organic-tank-text').innerText = `ใช้ไป ${data.organic}%`;
-            document.getElementById('organic-tank-bar').style.width = `${data.organic}%`;
-            document.getElementById('organic-tank-bar').className = `h-full rounded-full transition-all duration-300 ${data.organicColor}`;
+                if (id === selectedId) {
+                    card.classList.remove('border-gray-100');
+                    card.classList.add('border-emerald-500', 'ring-4', 'ring-emerald-50', 'bg-emerald-50/20');
+                    
+                    pin.classList.remove('scale-100', 'z-0');
+                    pin.classList.add('scale-150', 'z-20');
+
+                    setTimeout(() => {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 50);
+                } else {
+                    card.classList.add('border-gray-100');
+                    card.classList.remove('border-emerald-500', 'ring-4', 'ring-emerald-50', 'bg-emerald-50/20');
+                    
+                    pin.classList.add('scale-100', 'z-0');
+                    pin.classList.remove('scale-150', 'z-20');
+                }
+            });
         }
 
+        // --- ฟังก์ชันแลกของรางวัลแบบใหม่ (แสดง Pop-up ติ๊กถูก) ---
         function redeemReward(cost, rewardName) {
             if (currentPoints >= cost) {
+                // หักแต้มและอัปเดต UI
                 currentPoints -= cost;
                 document.getElementById('user-points').innerText = currentPoints.toLocaleString();
                 document.getElementById('wallet-points').innerText = currentPoints.toLocaleString();
-                alert(`🎉 แลกรับ "${rewardName}" สำเร็จ!\nสามารถตรวจสอบคูปองได้ในกระเป๋าของคุณ`);
+                
+                // เตรียมข้อมูลบน Pop-up
+                document.getElementById('success-reward-name').innerText = `คุณได้รับ "${rewardName}"`;
+                
+                // ดึง Elements
+                const modal = document.getElementById('success-modal');
+                const card = document.getElementById('success-modal-card');
+                const checkIcon = document.getElementById('success-check-icon');
+                
+                // เปิด Pop-up (แสดงผล -> เฟดอิน -> ขยายการ์ด)
+                modal.classList.remove('hidden');
+                
+                // รีเฟรช Animation เครื่องหมายถูก ให้เด้งใหม่ทุกครั้งที่กด
+                checkIcon.classList.remove('animate-pop-in');
+                void checkIcon.offsetWidth; // trigger reflow เพื่อรีสตาร์ทแอนิเมชันซีเอสเอส
+                checkIcon.classList.add('animate-pop-in');
+
+                // รอ 10ms ให้ DOM ทำงานแล้วค่อยเฟดแอนิเมชัน
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    card.classList.remove('scale-90');
+                    card.classList.add('scale-100');
+                }, 10);
+
             } else {
-                alert(`❌ แต้มสะสมไม่พอสำหรับการแลกรางวัลนี้`);
+                // กรณีแต้มไม่พอ
+                alert(`❌ แต้มของคุณไม่เพียงพอ\n(คุณมี ${currentPoints.toLocaleString()} Pts แต่รางวัลนี้ใช้ ${cost.toLocaleString()} Pts)`);
             }
+        }
+
+        // --- ฟังก์ชันปิด Pop-up ---
+        function closeSuccessModal() {
+            const modal = document.getElementById('success-modal');
+            const card = document.getElementById('success-modal-card');
+            
+            // เฟดเอาท์ และย่อขนาดการ์ดลง
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-90');
+            
+            // รอแอนิเมชันจบแล้วซ่อน Element
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
         }
     </script>
 </body>
